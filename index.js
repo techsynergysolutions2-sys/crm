@@ -40,6 +40,7 @@ const space = require('./routes/Space')
 const companylogo = require('./routes/CompanyLogo')
 const attachments = require('./routes/Attachments')
 const skills = require('./routes/Skills')
+const audit = require('./routes/Audit')
 
 const inventory = require('./routes/publicapi/Inventory')
 const comporders = require('./routes/publicapi/CompOrders')
@@ -68,6 +69,7 @@ app.use('/space', space)
 app.use('/companylogo', companylogo)
 app.use('/attachments', attachments)
 app.use('/skills', skills)
+app.use('/audit', audit)
 
 app.use('/inventory', inventory)
 

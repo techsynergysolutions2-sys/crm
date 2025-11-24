@@ -17,7 +17,11 @@ router.post('/', async (req, res) => {
                 let results1 = await selectQuery(connection, req.body.tablename, req.body.where, req.body.columns);
                 res.send(results1)
             }else if(action == 'new'){
-                data['createddate'] = new Date().toISOString().slice(0, 16)
+                const currdate = new Date().toISOString().slice(0, 16)
+                const date = new Date(currdate);
+                date.setUTCFullYear(date.getUTCFullYear() + 1);
+                data['createddate'] = currdate
+                data['expirydate'] = date
                 data['logourl'] = 'https://firebasestorage.googleapis.com/v0/b/crm-solutions-34e5f.firebasestorage.app/o/defaultlogo.png?alt=media&token=9670d5b8-bd23-458c-ab29-039f32846d76'
                 let results2 = await insertRecord(connection,req.body.tablename, data)
                 res.send(results2)

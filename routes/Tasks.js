@@ -32,7 +32,7 @@ router.post('/', async (req, res) => {
                 await insertRecord(connection,'task_descriptions', notes_data)
                 
                 if(frm == 'project'){
-                    console.log('check 2')
+                    
                     let sql = `
                         SELECT e.id, e.email,e.photourl, e.phone ,CONCAT(e.firstname, ' ', e.lastname) AS full_name FROM employees e WHERE e.id = ${data.assignto}
                     `
@@ -46,19 +46,38 @@ router.post('/', async (req, res) => {
                 }else{
                     res.send(results2)
                 }
+
+                const obj = {
+                    pageid: 5,
+                    recordid: results2.insertId,
+                    description: 'New task created.',
+                    createdby: data['createdby'],
+                    createddate: data['createddate']
+                }
+                await insertRecord(connection,'audit_trail', obj)
                 
             }else if(action == 'update'){
                 let description = data['description']
                 let id = data['id']
+                let updateby = data['updateby']
                 delete data['description']
                 delete data['frm']
                 delete data['id']
+                delete data['updateby']
                 let results3 = await updateRecord(connection,req.body.tablename, data, req.body.whereCondition, req.body.whereValues)
                 let notes_data = {
                     description: description
                 }
                 await updateRecord(connection,'task_descriptions', notes_data, 'taskid = ?', [id])
                 res.send(results3)
+                const obj = {
+                    pageid: 5,
+                    recordid: id,
+                    description: 'Task updated.',
+                    createdby: updateby,
+                    createddate: new Date().toISOString().slice(0, 16)
+                }
+                await insertRecord(connection,'audit_trail', obj)
             }
             connection.release();
         }

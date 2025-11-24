@@ -23,7 +23,19 @@ router.post('/', async (req, res) => {
                 data['password'] = hashedPassword
                 let results2 = await insertRecord(connection,req.body.tablename, data)
                 res.send(results2)
+                const obj = {
+                    pageid: 9,
+                    recordid: results2.insertId,
+                    description: 'New employee created.',
+                    createdby: data['createdby'],
+                    createddate: data['createddate']
+                }
+                await insertRecord(connection,'audit_trail', obj)
             }else if(action == 'update'){
+                let id = data['id']
+                let updateby = data['updateby']
+                delete data['id']
+                delete data['updateby']
                 let results3
                 if(data['password'] == undefined ){
                     if(data['status'] == 5){
@@ -37,6 +49,14 @@ router.post('/', async (req, res) => {
                    
                 }
                 res.send(results3)
+                const obj = {
+                    pageid: 9,
+                    recordid: id,
+                    description: 'Employee updated.',
+                    createdby: updateby,
+                    createddate: new Date().toISOString().slice(0, 16)
+                }
+                await insertRecord(connection,'audit_trail', obj)
             }
             connection.release();
         }

@@ -15,7 +15,6 @@ router.post('/', async (req, res) => {
         if(connection){
             if(action == 'select'){
                 let results1 = await directSelectQuery(connection, req.body.sql);
-                connection.release();
                 res.send(results1)
             }else if(action == 'new'){
                 data['createddate'] = new Date().toISOString().slice(0, 16)
@@ -27,21 +26,36 @@ router.post('/', async (req, res) => {
                     notes: nt
                 }
                 await insertRecord(connection,'project_notes', notes_data)
-                connection.release();
                 res.send(results2)
+                const obj = {
+                    pageid: 6,
+                    recordid: results2.insertId,
+                    description: 'New project created.',
+                    createdby: data['createdby'],
+                    createddate: data['createddate']
+                }
+                await insertRecord(connection,'audit_trail', obj)
             }else if(action == 'update'){
                  let id = data['id']
                  let nt = data['notes']
+                 let updateby = data['updateby']
                  delete data['notes']
                  delete data['id']
+                 delete data['updateby']
                 let results3 = await updateRecord(connection,req.body.tablename, data, req.body.whereCondition, req.body.whereValues)
                 let notes_data = {
                     notes: nt
                 }
                 await updateRecord(connection,'project_notes', notes_data, 'projectid = ?', [id])
-                console.log(results3)
-                connection.release();
                 res.send(results3)
+                const obj = {
+                    pageid: 6,
+                    recordid: id,
+                    description: 'Project updated.',
+                    createdby: updateby,
+                    createddate: new Date().toISOString().slice(0, 16)
+                }
+                await insertRecord(connection,'audit_trail', obj)
             }
             connection.release();
         }

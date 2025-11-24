@@ -20,9 +20,29 @@ router.post('/', async (req, res) => {
                 data['createddate'] = new Date().toISOString().slice(0, 16)
                 let results2 = await insertRecord(connection,req.body.tablename, data)
                 res.send(results2)
+                const obj = {
+                    pageid: 8,
+                    recordid: results2.insertId,
+                    description: 'New Leave created.',
+                    createdby: data['createdby'],
+                    createddate: data['createddate']
+                }
+                await insertRecord(connection,'audit_trail', obj)
             }else if(action == 'update'){
+                let id = data['id']
+                let updateby = data['updateby']
+                delete data['id']
+                delete data['updateby']
                 let results3 = await updateRecord(connection,req.body.tablename, data, req.body.whereCondition, req.body.whereValues)
                 res.send(results3)
+                const obj = {
+                    pageid: 8,
+                    recordid: id,
+                    description: 'Leave updated.',
+                    createdby: updateby,
+                    createddate: new Date().toISOString().slice(0, 16)
+                }
+                await insertRecord(connection,'audit_trail', obj)
             }
             connection.release();
         }
